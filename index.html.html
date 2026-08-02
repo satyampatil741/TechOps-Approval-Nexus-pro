@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>108 Fleet Management — Sumeet Facilities</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#080c10;--surface:#0e1520;--surface2:#141d2a;--border:#1f2e42;--accent:#e63946;--green:#00c67a;--gold:#f5a623;--blue:#3b82f6;--purple:#8b5cf6;--text:#e2eaf6;--muted:#5a7296;--muted2:#8ba0bb;--danger:#ef4444;--cyan:#06b6d4;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+::-webkit-scrollbar{width:4px;height:4px;}::-webkit-scrollbar-track{background:var(--surface);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+body::before{content:'';position:fixed;top:-20%;left:50%;width:600px;height:600px;background:radial-gradient(circle,rgba(230,57,70,0.06) 0%,transparent 70%);transform:translateX(-50%);pointer-events:none;z-index:0;}
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;}
+#login-screen::after{content:'108';position:absolute;font-family:'Rajdhani',sans-serif;font-size:38vw;font-weight:700;color:rgba(230,57,70,0.025);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--accent);padding:40px 36px;width:460px;max-width:94vw;position:relative;z-index:2;box-shadow:0 24px 80px rgba(0,0,0,0.5);}
+.login-org{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:600;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+.login-title{font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;letter-spacing:2px;line-height:1;margin-bottom:6px;}
+.login-sub{font-size:12px;color:var(--muted);margin-bottom:26px;}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:22px;}
+.role-btn{padding:13px 8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Rajdhani',sans-serif;font-size:12.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all .2s;text-align:center;line-height:1.3;}
+.role-btn span{display:block;font-size:18px;margin-bottom:4px;}
+.role-btn:hover{border-color:rgba(230,57,70,0.5);color:var(--text);}
+.role-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(230,57,70,0.07);}
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:10px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 14px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s;-webkit-appearance:none;}
+input:focus,select:focus,textarea:focus{border-color:rgba(59,130,246,0.6);}
+select option{background:var(--surface2);}textarea{resize:vertical;min-height:70px;}
+input::placeholder,textarea::placeholder{color:var(--muted);}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;border:none;transition:all .2s;white-space:nowrap;}
+.btn-primary{background:var(--accent);color:white;}.btn-primary:hover{background:#c1121f;}
+.btn-success{background:var(--green);color:#080c10;}.btn-success:hover{opacity:.85;}
+.btn-warning{background:var(--gold);color:#080c10;}.btn-warning:hover{opacity:.85;}
+.btn-danger{background:var(--danger);color:white;}.btn-danger:hover{opacity:.85;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted2);}.btn-outline:hover{border-color:var(--muted2);color:var(--text);}
+.btn-blue{background:var(--blue);color:white;}.btn-blue:hover{opacity:.85;}
+.btn-purple{background:var(--purple);color:white;}.btn-purple:hover{opacity:.85;}
+.btn-full{width:100%;justify-content:center;}.btn-sm{padding:6px 12px;font-size:11px;}.btn-lg{padding:13px 32px;font-size:15px;}
+.login-error{background:rgba(239,68,68,.12);border:1px solid var(--danger);color:#fca5a5;padding:10px 14px;font-size:12px;margin-bottom:14px;display:none;}
+.demo-creds{margin-top:16px;padding:12px;background:var(--surface2);border:1px solid var(--border);font-size:10.5px;color:var(--muted);line-height:1.9;max-height:120px;overflow-y:auto;}
+#app{display:none;position:relative;z-index:1;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-brand{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;display:flex;align-items:center;gap:10px;}
+.brand-num{background:var(--accent);color:white;font-size:12px;padding:3px 9px;font-weight:700;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.role-pill{display:flex;align-items:center;gap:7px;padding:5px 12px;border:1px solid var(--border);background:var(--surface2);font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.role-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.nav-wrap{background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;}
+.nav-tabs{display:flex;padding:0 20px;white-space:nowrap;}
+.nav-tab{padding:13px 18px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;transition:all .2s;position:relative;}
+.nav-tab:hover{color:var(--text);}.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.nav-badge{background:var(--accent);color:#fff;font-size:9px;padding:1px 5px;border-radius:8px;margin-left:5px;}
+.stats-bar{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--border);background:var(--surface);}
+.stat-item{padding:14px 16px;border-right:1px solid var(--border);}.stat-item:last-child{border-right:none;}
+.stat-lbl{font-size:9px;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.stat-val{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;line-height:1;margin-bottom:2px;}
+.stat-sub{font-size:10px;color:var(--muted);}
+.sv-green{color:var(--green);}.sv-red{color:var(--accent);}.sv-gold{color:var(--gold);}.sv-blue{color:var(--blue);}.sv-purple{color:var(--purple);}.sv-cyan{color:var(--cyan);}
+.page{display:none;padding:20px;}.page.active{display:block;}
+.dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+.dash-mini{background:var(--surface);border:1px solid var(--border);padding:18px 20px;position:relative;overflow:hidden;}
+.dash-mini::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;}
+.dash-mini.dm-green::after{background:var(--green);}.dash-mini.dm-red::after{background:var(--accent);}
+.dash-mini.dm-gold::after{background:var(--gold);}.dash-mini.dm-blue::after{background:var(--blue);}
+.dm-icon{font-size:26px;margin-bottom:10px;}
+.dm-val{font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;line-height:1;margin-bottom:4px;}
+.dm-lbl{font-size:11px;color:var(--muted);}
+.chart-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;}
+.chart-grid-2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.chart-box{background:var(--surface);border:1px solid var(--border);padding:20px 22px;}
+.chart-hdr{margin-bottom:16px;}
+.chart-ttl{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--muted2);}
+.toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.search-wrap{flex:1;min-width:180px;position:relative;}.search-wrap input{padding-left:34px;}
+.search-wrap::before{content:'⌕';position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:17px;z-index:1;}
+.table-wrap{border:1px solid var(--border);overflow-x:auto;background:var(--surface);}
+table{width:100%;border-collapse:collapse;font-size:12.5px;}
+th{background:var(--surface2);padding:9px 13px;text-align:left;font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;}
+td{padding:9px 13px;border-bottom:1px solid rgba(31,46,66,.6);color:var(--text);vertical-align:middle;white-space:nowrap;}
+tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(255,255,255,.02);}
+.tbl-count{font-size:11px;color:var(--muted);margin-top:8px;}
+.badge{display:inline-block;padding:3px 9px;font-family:'Rajdhani',sans-serif;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;}
+.badge-onroad{background:rgba(0,198,122,.12);color:var(--green);}.badge-offroad{background:rgba(230,57,70,.12);color:var(--accent);}
+.badge-pending{background:rgba(245,166,35,.12);color:var(--gold);}.badge-approved{background:rgba(59,130,246,.12);color:var(--blue);}
+.badge-under{background:rgba(139,92,246,.12);color:var(--purple);}.badge-closed{background:rgba(0,198,122,.12);color:var(--green);}
+.badge-rejected{background:rgba(239,68,68,.14);color:var(--danger);}
+.form-card{background:var(--surface);border:1px solid var(--border);padding:24px 28px;margin-bottom:20px;}
+.form-card-title{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.span2{grid-column:span 2;}.span3{grid-column:span 3;}.req::after{content:' *';color:var(--accent);}
+.approval-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--gold);padding:18px 20px;margin-bottom:12px;}
+.approval-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+.approval-id{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;color:var(--gold);}
+.approval-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.approval-body{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.ab-lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.ab-val{font-size:14px;font-family:'Rajdhani',sans-serif;font-weight:700;}
+.approval-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--accent);width:920px;max-width:96vw;max-height:92vh;overflow-y:auto;padding:28px 30px;}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;}
+.modal-ttl{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:700;}
+.modal-close{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;}.modal-close:hover{color:var(--accent);}
+.log-entry{background:var(--surface2);border:1px solid var(--border);padding:12px 14px;margin-bottom:10px;border-left:2px solid var(--blue);}
+.log-meta{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.log-text{font-size:13px;line-height:1.5;}
+.report-filters{background:var(--surface);border:1px solid var(--border);padding:18px 20px;margin-bottom:18px;display:grid;grid-template-columns:repeat(5,1fr) auto;gap:14px;align-items:end;}
+.report-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px;}
+.rs-card{background:var(--surface);border:1px solid var(--border);padding:16px 18px;}
+.rs-lbl{font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.rs-val{font-family:'Rajdhani',sans-serif;font-size:26px;font-weight:700;}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--green);padding:12px 18px;font-size:13px;z-index:999;opacity:0;transform:translateY(12px);transition:all .25s;pointer-events:none;max-width:320px;}
+.toast.show{opacity:1;transform:translateY(0);}.toast.error{border-left-color:var(--accent);}.toast.warn{border-left-color:var(--gold);}.toast.info{border-left-color:var(--blue);}
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(8,12,16,.85);z-index:300;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.loading-overlay.active{display:flex;}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-overlay p{font-family:'Rajdhani',sans-serif;font-size:14px;letter-spacing:3px;color:var(--muted);}
+.empty{text-align:center;padding:50px 20px;color:var(--muted);}
+.empty h3{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;margin-bottom:6px;color:var(--text);}
+.sec-div{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);padding:8px 0;border-bottom:1px solid var(--border);margin:20px 0 16px;grid-column:1/-1;}
+.delta-positive{color:var(--green);}.delta-negative{color:var(--accent);}
+.stage-track{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;}
+.stage-chip{font-family:'Rajdhani',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 9px;border:1px solid var(--border);color:var(--muted);}
+.stage-chip.done{border-color:var(--green);color:var(--green);}
+.stage-chip.current{border-color:var(--gold);color:var(--gold);background:rgba(245,166,35,.08);}
+.stage-chip.rejected{border-color:var(--danger);color:var(--danger);}
+.reject-banner{background:rgba(239,68,68,.1);border:1px solid var(--danger);color:#fca5a5;padding:10px 14px;font-size:12px;margin-bottom:14px;}
+@media(max-width:900px){.stats-bar{grid-template-columns:repeat(4,1fr);}.chart-grid{grid-template-columns:1fr;}.chart-grid-2{grid-template-columns:1fr 1fr;}.form-grid{grid-template-columns:1fr 1fr;}.dash-grid{grid-template-columns:repeat(2,1fr);}.report-filters{grid-template-columns:1fr 1fr;}.report-summary{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:600px){.stats-bar{grid-template-columns:repeat(2,1fr);}.form-grid{grid-template-columns:1fr;}.chart-grid-2{grid-template-columns:1fr;}.dash-grid{grid-template-columns:1fr 1fr;}.topbar-brand span:not(.brand-num){display:none;}.report-filters{grid-template-columns:1fr;}.approval-body{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="loading-overlay" id="loading"><div class="spinner"></div><p>LOADING...</p></div>
+<div class="toast" id="toast"></div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+<div class="login-card">
+  <div class="login-org">Sumeet Facilities Ltd · Maharashtra (18 Districts)</div>
+  <div class="login-title">108 FLEET SYSTEM</div>
+  <div class="login-sub">Full Approval Chain — ADM → DM → Fleet → Purchase → Account</div>
+  <div class="form-group">
+    <div class="form-label">Select Your Role</div>
+    <div class="role-grid">
+      <button class="role-btn" data-role="Admin" onclick="selectRole('Admin')"><span>🛡</span>Admin</button>
+      <button class="role-btn active" data-role="ADM" onclick="selectRole('ADM')"><span>📋</span>ADM</button>
+      <button class="role-btn" data-role="DM" onclick="selectRole('DM')"><span>🗂</span>DM</button>
+      <button class="role-btn" data-role="FleetManager" onclick="selectRole('FleetManager')"><span>🏢</span>Fleet Manager</button>
+      <button class="role-btn" data-role="FleetHOD" onclick="selectRole('FleetHOD')"><span>🎖</span>Fleet HOD</button>
+      <button class="role-btn" data-role="Purchase" onclick="selectRole('Purchase')"><span>🛒</span>Purchase</button>
+      <button class="role-btn" data-role="Account" onclick="selectRole('Account')"><span>💳</span>Account</button>
+    </div>
+  </div>
+  <div class="form-group"><label class="form-label">User ID</label><input type="text" id="login-user" placeholder="e.g. ADM-PUNE-01" autocomplete="off"></div>
+  <div class="form-group"><label class="form-label">PIN</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+  <div class="login-error" id="login-error">Invalid credentials.</div>
+  <button class="btn btn-primary btn-full btn-lg" onclick="doLogin()">ENTER SYSTEM</button>
+  <div class="demo-creds">
+    <strong style="color:var(--gold)">SETUP NOTE</strong><br>
+    Log in as <code style="color:var(--text)">Admin</code> first (that ID must exist as one row in the <code style="color:var(--text)">Users</code> sheet before anyone can log in). From the Admin's "User Management" tab you can then create every ADM/DM/Fleet Manager/Fleet HOD/Purchase/Account ID — no need to edit the sheet by hand after that.
+  </div>
+</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+<div class="topbar">
+  <div class="topbar-brand"><span class="brand-num">108</span><span>FLEET MANAGEMENT SYSTEM</span></div>
+  <div class="topbar-right">
+    <div class="role-pill"><div class="dot"></div><span id="user-label">—</span></div>
+    <button class="btn btn-outline btn-sm" onclick="logout()">LOGOUT</button>
+  </div>
+</div>
+
+<div class="stats-bar" id="stats-bar" style="display:none">
+  <div class="stat-item"><div class="stat-lbl">Total</div><div class="stat-val" id="s-total">0</div><div class="stat-sub">requests</div></div>
+  <div class="stat-item"><div class="stat-lbl">My Pending</div><div class="stat-val sv-gold" id="s-mypending">0</div><div class="stat-sub">action needed</div></div>
+  <div class="stat-item"><div class="stat-lbl">Under Repair</div><div class="stat-val sv-purple" id="s-repair">0</div><div class="stat-sub">in workshop</div></div>
+  <div class="stat-item"><div class="stat-lbl">Rejected</div><div class="stat-val sv-red" id="s-rejected">0</div><div class="stat-sub">returned</div></div>
+  <div class="stat-item"><div class="stat-lbl">Closed</div><div class="stat-val sv-green" id="s-closed">0</div><div class="stat-sub">completed</div></div>
+  <div class="stat-item"><div class="stat-lbl">Total Invoice</div><div class="stat-val sv-blue" id="s-invoice">0</div><div class="stat-sub">final amount</div></div>
+  <div class="stat-item"><div class="stat-lbl">Hardcopy Pending</div><div class="stat-val sv-cyan" id="s-hardcopy">0</div><div class="stat-sub">invoices</div></div>
+</div>
+
+<div class="nav-wrap"><div class="nav-tabs" id="nav-tabs"></div></div>
+
+<!-- DASHBOARD -->
+<div class="page" id="page-dashboard">
+  <div class="dash-grid">
+    <div class="dash-mini dm-gold"><div class="dm-icon">⏳</div><div class="dm-val sv-gold" id="dm-pending">0</div><div class="dm-lbl">Awaiting Your Action</div></div>
+    <div class="dash-mini dm-blue"><div class="dm-icon">🔧</div><div class="dm-val sv-purple" id="dm-repair">0</div><div class="dm-lbl">Under Repair</div></div>
+    <div class="dash-mini dm-red"><div class="dm-icon">↩</div><div class="dm-val sv-red" id="dm-rejected">0</div><div class="dm-lbl">Rejected / Returned</div></div>
+    <div class="dash-mini dm-green"><div class="dm-icon">✅</div><div class="dm-val sv-green" id="dm-closed">0</div><div class="dm-lbl">Closed</div></div>
+  </div>
+  <div class="chart-grid">
+    <div class="chart-box"><div class="chart-hdr"><div class="chart-ttl">Monthly — Estimate vs Final Amount</div></div><canvas id="chart-monthly" height="220"></canvas></div>
+    <div class="chart-box"><div class="chart-hdr"><div class="chart-ttl">Requests by Stage</div></div><canvas id="chart-status" height="220"></canvas></div>
+  </div>
+  <div class="chart-grid-2">
+    <div class="chart-box"><div class="chart-hdr"><div class="chart-ttl">Top Complaints</div></div><canvas id="chart-complaint" height="220"></canvas></div>
+    <div class="chart-box"><div class="chart-hdr"><div class="chart-ttl">Cost Per Vehicle</div></div><canvas id="chart-cost" height="220"></canvas></div>
+    <div class="chart-box"><div class="chart-hdr"><div class="chart-ttl">District Split</div></div><canvas id="chart-district" height="220"></canvas></div>
+  </div>
+</div>
+
+<!-- DATA SHEET -->
+<div class="page" id="page-datasheet">
+  <div class="toolbar">
+    <div class="search-wrap"><input type="text" id="search-input" placeholder="Search…" oninput="filterTable()"></div>
+    <select id="f-stage-filter" onchange="filterTable()" style="width:150px"><option value="">All Stages</option></select>
+    <select id="f-district-filter" onchange="filterTable()" style="width:140px"><option value="">All Districts</option></select>
+    <button class="btn btn-outline btn-sm" onclick="loadData()">↻ Refresh</button>
+    <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ CSV</button>
+  </div>
+  <div class="table-wrap">
+    <table><thead><tr><th>#</th><th>Date</th><th>Vehicle</th><th>Zone</th><th>District</th><th>Cluster</th><th>Complaint</th><th>Vendor</th><th>Estimate</th><th>Final Amt</th><th>Stage</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody id="data-tbody"></tbody></table>
+  </div>
+  <div id="tbl-empty" class="empty" style="display:none"><h3>No Records</h3></div>
+  <div class="tbl-count" id="tbl-count"></div>
+</div>
+
+<!-- MY ACTIONS (stage-specific approvals for ADM/DM/FleetManager/FleetHOD/Purchase/Account/Closure) -->
+<div class="page" id="page-actions">
+  <div id="actions-list"></div>
+  <div id="actions-empty" class="empty" style="display:none"><h3>All Clear!</h3><p>Nothing pending your review right now.</p></div>
+</div>
+
+<!-- INVOICE HARDCOPY FOLLOW-UP -->
+<div class="page" id="page-hardcopy">
+  <div class="toolbar"><div style="font-size:12px;color:var(--muted)">Physical invoice hardcopies are reconciled twice a month (1–15 / 16–end). Mark each closed request as Received once the hardcopy arrives.</div></div>
+  <div class="table-wrap">
+    <table><thead><tr><th>#</th><th>Closure Date</th><th>Vehicle</th><th>Vendor</th><th>Invoice No</th><th>Final Amount</th><th>Batch</th><th>Hardcopy Status</th><th>Follow-up Date</th><th>Action</th></tr></thead>
+    <tbody id="hardcopy-tbody"></tbody></table>
+  </div>
+  <div id="hardcopy-empty" class="empty" style="display:none"><h3>Nothing Closed Yet</h3></div>
+</div>
+
+<!-- REPORTS -->
+<div class="page" id="page-reports">
+  <div class="report-filters">
+    <div class="form-group" style="margin:0"><label class="form-label">From</label><input type="date" id="rpt-from"></div>
+    <div class="form-group" style="margin:0"><label class="form-label">To</label><input type="date" id="rpt-to"></div>
+    <div class="form-group" style="margin:0"><label class="form-label">Stage</label><select id="rpt-stage"><option value="">All</option></select></div>
+    <div class="form-group" style="margin:0"><label class="form-label">District</label><select id="rpt-district"><option value="">All</option></select></div>
+    <div class="form-group" style="margin:0"><label class="form-label">Zone</label><select id="rpt-zone"><option value="">All</option></select></div>
+    <button class="btn btn-primary" onclick="genReport()">GENERATE</button>
+  </div>
+  <div id="report-output"></div>
+</div>
+
+<!-- RAISE REQUEST (ADM) -->
+<div class="page" id="page-raise">
+  <div style="max-width:860px;margin:0 auto">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;margin-bottom:4px">RAISE BREAKDOWN / MAINTENANCE REQUEST</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:22px">Fields marked * required. Select the Vehicle No first — Zone/District/Cluster/Base/Make fill automatically.</div>
+    <div class="form-card">
+      <div class="form-card-title">🚑 Vehicle & Location</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label req">Requirement Date</label><input type="date" id="f-date"></div>
+        <div class="form-group"><label class="form-label req">Vehicle No</label><input list="vehicle-list" id="f-regno" placeholder="Start typing…" oninput="autofillVehicle()"><datalist id="vehicle-list"></datalist></div>
+        <div class="form-group"><label class="form-label">Base Location</label><input type="text" id="f-baselocation" readonly></div>
+        <div class="form-group"><label class="form-label">Zone</label><input type="text" id="f-zone" readonly></div>
+        <div class="form-group"><label class="form-label">District</label><input type="text" id="f-district" readonly></div>
+        <div class="form-group"><label class="form-label">Cluster</label><input type="text" id="f-cluster" readonly></div>
+        <div class="form-group"><label class="form-label">Vehicle Make</label><input type="text" id="f-make" readonly></div>
+      </div>
+    </div>
+    <div class="form-card">
+      <div class="form-card-title">🔴 Complaint / Requirement</div>
+      <div class="form-grid">
+        <div class="form-group span3"><label class="form-label req">Complaint / Requirement Details</label><textarea id="f-complaint" placeholder="Describe the issue…"></textarea></div>
+      </div>
+    </div>
+    <div class="form-card">
+      <div class="form-card-title">🔧 Work & Vendor</div>
+      <div class="form-grid">
+        <div class="form-group span2"><label class="form-label req">Work Details / Process</label><textarea id="f-workdetails" placeholder="What needs to be done…"></textarea></div>
+        <div class="form-group"><label class="form-label">Type of Work</label><input type="text" id="f-typeofwork"></div>
+        <div class="form-group"><label class="form-label req">Vendor Name</label><input list="vendor-list-raise" id="f-vendorname" onchange="autofillVendorField('f-')"><datalist id="vendor-list-raise"></datalist></div>
+        <div class="form-group"><label class="form-label req">Estimate Amount (Rs)</label><input type="number" id="f-estimate"></div>
+      </div>
+    </div>
+    <div class="form-card">
+      <div class="form-card-title">💰 Payment & Bank</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Payment Recipient</label><select id="f-paymentrecipient"><option>Vendor (Direct Repairer/Supplier)</option><option>ADM (Reimbursement)</option></select></div>
+        <div class="form-group"><label class="form-label">Recipient Name (if ADM reimbursement)</label><input type="text" id="f-recipientname"></div>
+        <div class="form-group"><label class="form-label">Bank KYC</label><input type="text" id="f-bankkyc"></div>
+        <div class="form-group"><label class="form-label">Bank Name</label><input type="text" id="f-vendorbankname"></div>
+        <div class="form-group"><label class="form-label">Bank Account No</label><input type="text" id="f-vendorbankaccno"></div>
+        <div class="form-group"><label class="form-label">IFSC</label><input type="text" id="f-vendorbankifsc"></div>
+        <div class="form-group"><label class="form-label">Account Holder's Name</label><input type="text" id="f-bankaccholder"></div>
+      </div>
+    </div>
+    <div class="form-card">
+      <div class="form-card-title">📷 Media & Remarks</div>
+      <div class="form-grid">
+        <div class="form-group span2"><label class="form-label">Photo/Video Links (vehicle under maintenance)</label><textarea id="f-admmedia" placeholder="Paste Drive/SharePoint links, one per line"></textarea></div>
+        <div class="form-group"><label class="form-label">ADM Remarks</label><input type="text" id="f-admremarks"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:40px">
+      <button class="btn btn-success btn-lg" onclick="saveEntry()">✓ SUBMIT TO DM</button>
+      <button class="btn btn-outline" onclick="clearForm()">CLEAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- USER MANAGEMENT (Admin) -->
+<div class="page" id="page-users">
+  <div style="max-width:900px;margin:0 auto">
+    <div class="form-card">
+      <div class="form-card-title">➕ Create Login ID</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label req">User ID</label><input type="text" id="u-id" placeholder="e.g. ADM-PUNE-01"></div>
+        <div class="form-group"><label class="form-label req">Name</label><input type="text" id="u-name"></div>
+        <div class="form-group"><label class="form-label req">Role</label><select id="u-role"><option>ADM</option><option>DM</option><option>FleetManager</option><option>FleetHOD</option><option>Purchase</option><option>Account</option><option>Admin</option></select></div>
+        <div class="form-group"><label class="form-label req">PIN</label><input type="text" id="u-pin" placeholder="Set a PIN"></div>
+        <div class="form-group"><label class="form-label">Zone</label><input type="text" id="u-zone"></div>
+        <div class="form-group"><label class="form-label">District</label><input type="text" id="u-district"></div>
+      </div>
+      <div style="margin-top:16px"><button class="btn btn-success" onclick="createUser()">✓ CREATE ID</button></div>
+    </div>
+    <div class="toolbar"><div style="font-size:12px;color:var(--muted)">All login IDs currently in the Users sheet:</div><button class="btn btn-outline btn-sm" onclick="loadData()">↻ Refresh</button></div>
+    <div class="table-wrap">
+      <table><thead><tr><th>User ID</th><th>Name</th><th>Role</th><th>Zone</th><th>District</th></tr></thead><tbody id="users-tbody"></tbody></table>
+    </div>
+    <div id="users-empty" class="empty" style="display:none"><h3>No IDs Created Yet</h3><p>Create the first ADM / DM / Fleet / Purchase / Account ID above.</p></div>
+  </div>
+</div>
+
+<!-- MY REQUESTS (ADM) -->
+<div class="page" id="page-myrequests">
+  <div style="max-width:900px;margin:0 auto">
+    <div class="toolbar"><button class="btn btn-outline btn-sm" onclick="loadData()">↻ Refresh</button></div>
+    <div id="field-requests-list"></div>
+    <div id="field-requests-empty" class="empty" style="display:none"><h3>No Requests Yet</h3></div>
+  </div>
+</div>
+</div>
+
+<!-- ACTION MODAL -->
+<div class="modal-overlay" id="edit-modal">
+<div class="modal">
+  <div class="modal-hdr"><div class="modal-ttl" id="edit-modal-title">ACTION</div><button class="modal-close" onclick="closeModal('edit-modal')">✕</button></div>
+  <div id="edit-modal-body"></div>
+</div>
+</div>
+
+<!-- DETAIL / LOG MODAL -->
+<div class="modal-overlay" id="log-modal">
+<div class="modal" style="max-width:680px">
+  <div class="modal-hdr"><div class="modal-ttl" id="log-modal-title">DETAIL</div><button class="modal-close" onclick="closeModal('log-modal')">✕</button></div>
+  <div id="log-modal-body"></div>
+</div>
+</div>
+
+<script>
+// ════════════════════════════════
+// CONFIG
+// ════════════════════════════════
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxe-bPWDjq78mJZBzk8ICPxIeahL7SCe6DwNkz3fKWP_mU1W4hZJrWwcmnLYD__Y2F3/exec'; // <-- redeploy with the new Code.gs and paste the fresh URL here
+
+const STAGE_ORDER = ['ADM','DM','FleetManager','FleetHOD','Purchase','Account','Closure','Done'];
+const STAGE_LABEL = {ADM:'ADM Review',DM:'DM Approval',FleetManager:'Fleet Manager',FleetHOD:'Fleet HOD',Purchase:'Purchase',Account:'Account',Closure:'Closure',Done:'Closed'};
+
+// Fields each role fills when acting on a request. type: text/number/date/textarea/select/vendor/recipient
+const STAGES = {
+  ADM: { next:'DM', selfRole:'ADM', fields:[
+      {id:'workDetails',label:'Work Details / Process',type:'textarea',req:true},
+      {id:'typeOfWork',label:'Type of Work',type:'text'},
+      {id:'vendorName',label:'Vendor Name',type:'vendor',req:true},
+      {id:'estimateAmount',label:'Estimate Amount (Rs)',type:'number',req:true},
+      {id:'paymentRecipient',label:'Payment Recipient',type:'select',options:['Vendor (Direct Repairer/Supplier)','ADM (Reimbursement)']},
+      {id:'recipientName',label:'Recipient Name (if ADM reimbursement)',type:'text'},
+      {id:'bankKYC',label:'Bank KYC',type:'text'},
+      {id:'vendorBankName',label:'Bank Name',type:'text'},
+      {id:'vendorBankAccNo',label:'Bank Account No',type:'text'},
+      {id:'vendorBankIFSC',label:'IFSC',type:'text'},
+      {id:'bankAccHolderName',label:"Account Holder's Name",type:'text'},
+      {id:'admMedia',label:'Photo/Video Links (vehicle under maintenance)',type:'textarea',ph:'Paste Drive/SharePoint links, one per line'},
+      {id:'admRemarks',label:'ADM Remarks',type:'text'}
+  ]},
+  DM: { next:'FleetManager', selfRole:'DM', fields:[
+      {id:'dmRemarks',label:'DM Remarks',type:'textarea'}
+  ]},
+  FleetManager: { next:'FleetHOD', selfRole:'FleetManager', fields:[
+      {id:'fleetProcessDate',label:'Process Date',type:'date'},
+      {id:'fleetNegotiatedDate',label:'Negotiated Date',type:'date'},
+      {id:'fleetFinalAmount',label:'Final Amount (Rs)',type:'number'},
+      {id:'fleetManagerRemarks',label:'Fleet Manager Remarks',type:'textarea'}
+  ]},
+  FleetHOD: { next:'Purchase', selfRole:'FleetHOD', fields:[
+      {id:'fleetHodRemarks',label:'HOD Remarks',type:'textarea'}
+  ]},
+  Purchase: { next:'Account', selfRole:'Purchase', fields:[
+      {id:'purchaseNegotiatedAmount',label:'Negotiated Amount (Rs)',type:'number'},
+      {id:'purchaseRemarks',label:'Purchase Remarks',type:'textarea'}
+  ]},
+  Account: { next:'Closure', selfRole:'Account', fields:[
+      {id:'accountFinalAmount',label:'Final Payable Amount (Rs)',type:'number',req:true},
+      {id:'accountRemarks',label:'Account Remarks',type:'textarea'}
+  ]},
+  Closure: { next:'Done', selfRole:'CLOSURE', fields:[  // ADM or DM can close
+      {id:'closurePhotos',label:'Completion Photo/Video Links',type:'textarea',ph:'Paste links, one per line'},
+      {id:'closureInvoiceNo',label:'Invoice No.',type:'text'},
+      {id:'closureRemarks',label:'Closure Remarks',type:'textarea'}
+  ]}
+};
+
+let user=null, allData=[], masters={vehicles:[],vendors:[],users:[]}, filteredData=[], editId=null, charts={};
+
+// ════════════════════════════════
+// UTILS
+// ════════════════════════════════
+const $ = id => document.getElementById(id);
+function toast(msg,t='ok'){const el=$('toast');el.textContent=msg;el.className='toast show'+(t==='error'?' error':t==='warn'?' warn':t==='info'?' info':'');clearTimeout(el._t);el._t=setTimeout(()=>el.className='toast',3500);}
+function loading(v){$('loading').classList.toggle('active',v);}
+function closeModal(id){$(id).classList.remove('open');}
+function inr(v){const n=parseFloat(v);return isNaN(n)||n===0?'—':'Rs'+n.toLocaleString('en-IN');}
+function fd(d){return d?new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'-';}
+function sl(s){try{return JSON.parse(s||'[]');}catch{return[];}}
+function stageBadge(r){
+  if((r.overallStatus||'').indexOf('Rejected')===0) return '<span class="badge badge-rejected">Rejected</span>';
+  if(r.stage==='Done') return '<span class="badge badge-closed">Closed</span>';
+  return '<span class="badge badge-pending">'+(STAGE_LABEL[r.stage]||r.stage)+'</span>';
+}
+function amountForRow(r){
+  return r.accountFinalAmount || r.fleetFinalAmount || r.purchaseNegotiatedAmount || r.estimateAmount || '';
+}
+
+// ════════════════════════════════
+// JSONP — ALL API CALLS via GET
+// ════════════════════════════════
+function call(params){
+  return new Promise(resolve=>{
+    const cb='_cb'+Date.now()+Math.random().toString(36).slice(2,6);
+    const script=document.createElement('script');
+    let url=APPS_SCRIPT_URL+'?callback='+encodeURIComponent(cb)+'&t='+Date.now();
+    for(const k in params){
+      const v=params[k];
+      url+='&'+encodeURIComponent(k)+'='+encodeURIComponent(typeof v==='object'?JSON.stringify(v):v);
+    }
+    window[cb]=function(res){
+      delete window[cb];
+      try{document.head.removeChild(script);}catch(e){}
+      resolve(res||{success:false,error:'No response'});
+    };
+    script.onerror=function(){
+      delete window[cb];
+      try{document.head.removeChild(script);}catch(e){}
+      resolve({success:false,error:'Network error'});
+    };
+    setTimeout(()=>{
+      if(window[cb]){delete window[cb];try{document.head.removeChild(script);}catch(e){}resolve({success:false,error:'Timeout'});}
+    },15000);
+    script.src=url;
+    document.head.appendChild(script);
+  });
+}
+
+// ════════════════════════════════
+// DATA OPS
+// ════════════════════════════════
+async function loadData(){
+  loading(true);
+  const [r,m]=await Promise.all([call({action:'getAll'}),call({action:'getMasters'})]);
+  loading(false);
+  if(r&&r.success){allData=(r.data||[]).map(x=>({...x,logs:x.logs||'[]'}));}
+  else{toast('Load failed: '+(r.error||'unknown'),'error');allData=[];}
+  if(m&&m.success){masters=m.data;populateVehicleList();}
+  afterLoad();
+}
+async function addData(data){loading(true);const r=await call({action:'addRow',data:data});loading(false);return r;}
+async function updateData(data){loading(true);const r=await call({action:'updateRow',data:data});loading(false);return r;}
+
+function afterLoad(){
+  if(user.role==='Admin')renderUsersTable();
+  if(user.role==='ADM')renderMyRequests(allData.filter(r=>r.admId===user.userId));
+  updateStats(allData);
+  renderTable(allData);
+  renderCharts(allData);
+  renderActions(allData);
+  renderHardcopy(allData);
+  populateFilters(allData);
+}
+
+// ════════════════════════════════
+// AUTH
+// ════════════════════════════════
+let selRole='ADM';
+function selectRole(r){
+  selRole=r;
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.toggle('active',b.dataset.role===r));
+}
+async function doLogin(){
+  const userId=$('login-user').value.trim();
+  const pin=$('login-pass').value;
+  const err=$('login-error');
+  err.style.display='none';
+  if(!userId||!pin){err.textContent='Enter your User ID and PIN.';err.style.display='block';return;}
+  loading(true);
+  const r=await call({action:'login',userId:userId,pin:pin});
+  loading(false);
+  if(r&&r.success){
+    if(r.user.role!==selRole){err.textContent='This ID is registered under a different role.';err.style.display='block';return;}
+    user=r.user;launch();
+  }else{
+    err.textContent=r&&r.error?r.error:'Invalid credentials.';err.style.display='block';
+  }
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&$('login-screen').style.display!=='none')doLogin();});
+function logout(){
+  user=null;allData=[];
+  $('login-screen').style.display='flex';
+  $('app').style.display='none';
+  $('login-pass').value='';$('login-user').value='';
+  selectRole('ADM');
+}
+function launch(){
+  $('login-screen').style.display='none';
+  $('app').style.display='block';
+  $('user-label').textContent=user.name+' · '+(STAGE_LABEL[user.role]||user.role);
+  const nav=$('nav-tabs');nav.innerHTML='';
+  let tabs=[],landing='dashboard';
+  if(user.role==='Admin'){
+    tabs=[['users','User Management'],['dashboard','Dashboard'],['datasheet','Data Sheet']];
+    landing='users';
+    $('stats-bar').style.display='grid';
+  }else if(user.role==='ADM'){
+    tabs=[['raise','Raise Request'],['myrequests','My Requests'],['actions','My Actions'],['dashboard','Dashboard'],['datasheet','Data Sheet'],['hardcopy','Invoice Hardcopy'],['reports','Reports']];
+    landing='raise';
+    $('stats-bar').style.display='grid';
+  }else{
+    tabs=[['dashboard','Dashboard'],['datasheet','Data Sheet'],['actions','My Actions'],['hardcopy','Invoice Hardcopy'],['reports','Reports']];
+    $('stats-bar').style.display='grid';
+  }
+  tabs.forEach(([id,lbl],i)=>{
+    const b=document.createElement('button');
+    b.className='nav-tab'+(id===landing?' active':'');
+    b.dataset.tab=id;b.textContent=lbl;b.onclick=()=>tab(id);nav.appendChild(b);
+  });
+  if(user.role==='ADM'){
+    const today=new Date().toISOString().split('T')[0];$('f-date').value=today;
+  }
+  loadData();tab(landing);
+}
+function tab(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  const p=$('page-'+id);if(p)p.classList.add('active');
+  const t=document.querySelector('.nav-tab[data-tab="'+id+'"]');if(t)t.classList.add('active');
+}
+
+// ════════════════════════════════
+// VEHICLE / VENDOR AUTOFILL
+// ════════════════════════════════
+function populateVehicleList(){
+  const dl=$('vehicle-list');if(dl)dl.innerHTML=masters.vehicles.map(v=>'<option value="'+v.vehicleNo+'">').join('');
+  const vl=$('vendor-list-raise');if(vl)vl.innerHTML=masters.vendors.map(v=>'<option value="'+v.vendorName+'">').join('');
+}
+function autofillVehicle(){
+  const v=masters.vehicles.find(x=>x.vehicleNo===$('f-regno').value.trim());
+  if(!v)return;
+  $('f-zone').value=v.zone;$('f-district').value=v.district;$('f-cluster').value=v.cluster;
+  $('f-baselocation').value=v.baseLocation;$('f-make').value=v.make;
+}
+function vehicleLookup(regno){return masters.vehicles.find(x=>x.vehicleNo===regno);}
+function vendorLookup(name){return masters.vendors.find(x=>x.vendorName===name);}
+
+// ════════════════════════════════
+// STATS
+// ════════════════════════════════
+function myPendingCount(d){
+  if(user.role==='FleetManager'||user.role==='FleetHOD'||user.role==='Purchase'||user.role==='Account')
+    return d.filter(r=>r.stage===user.role).length;
+  if(user.role==='ADM')return d.filter(r=>r.stage==='ADM').length;
+  if(user.role==='DM')return d.filter(r=>r.stage==='DM').length;
+  return 0;
+}
+function updateStats(d){
+  const closed=d.filter(x=>x.stage==='Done').length;
+  const rejected=d.filter(x=>(x.overallStatus||'').indexOf('Rejected')===0).length;
+  const repair=d.filter(x=>['FleetManager','FleetHOD','Purchase','Account','Closure'].includes(x.stage)).length;
+  const inv=d.reduce((s,x)=>s+(parseFloat(amountForRow(x))||0),0);
+  const hardcopyPending=d.filter(x=>x.stage==='Done'&&x.hardcopyStatus!=='Received').length;
+  $('s-total').textContent=d.length;
+  $('s-mypending').textContent=myPendingCount(d);
+  $('s-repair').textContent=repair;
+  $('s-rejected').textContent=rejected;
+  $('s-closed').textContent=closed;
+  $('s-invoice').textContent=inv>0?'Rs'+inv.toLocaleString('en-IN'):'0';
+  $('s-hardcopy').textContent=hardcopyPending;
+  $('dm-pending').textContent=myPendingCount(d);
+  $('dm-repair').textContent=repair;
+  $('dm-rejected').textContent=rejected;
+  $('dm-closed').textContent=closed;
+}
+
+// ════════════════════════════════
+// DATA SHEET TABLE
+// ════════════════════════════════
+function renderTable(d){
+  filteredData=d;
+  const tb=$('data-tbody'),em=$('tbl-empty'),ct=$('tbl-count');
+  ct.textContent=d.length+' record'+(d.length!==1?'s':'');
+  if(!d.length){tb.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  tb.innerHTML=d.map((r,i)=>{
+    return '<tr><td style="color:var(--muted)">'+(i+1)+'</td>'
+      +'<td>'+fd(r.reqDate)+'</td>'
+      +'<td><strong style="font-family:Rajdhani;letter-spacing:1px">'+(r.vehicleNo||'—')+'</strong></td>'
+      +'<td>'+(r.zone||'—')+'</td>'
+      +'<td>'+(r.district||'—')+'</td>'
+      +'<td>'+(r.cluster||'—')+'</td>'
+      +'<td style="max-width:180px;white-space:normal;font-size:12px">'+((r.complaint||'').substring(0,60))+'</td>'
+      +'<td>'+(r.vendorName||'—')+'</td>'
+      +'<td>'+(r.estimateAmount?'Rs'+parseFloat(r.estimateAmount).toLocaleString('en-IN'):'—')+'</td>'
+      +'<td><strong>'+inr(amountForRow(r))+'</strong></td>'
+      +'<td>'+stageBadge(r)+'</td>'
+      +'<td style="font-size:11px;color:var(--muted)">'+(r.overallStatus||'')+'</td>'
+      +'<td><button class="btn btn-outline btn-sm" onclick="openDetail(\''+r.id+'\')">View</button></td></tr>';
+  }).join('');
+}
+function filterTable(){
+  const q=$('search-input').value.toLowerCase();
+  const st=$('f-stage-filter').value;
+  const ds=$('f-district-filter').value;
+  renderTable(allData.filter(r=>
+    (!q||Object.values(r).some(v=>String(v).toLowerCase().includes(q)))
+    &&(!st||r.stage===st)
+    &&(!ds||r.district===ds)
+  ));
+}
+function populateFilters(d){
+  const stages=[...new Set(d.map(x=>x.stage).filter(Boolean))];
+  const dists=[...new Set(d.map(x=>x.district).filter(Boolean))].sort();
+  const zones=[...new Set(d.map(x=>x.zone).filter(Boolean))].sort();
+  $('f-stage-filter').innerHTML='<option value="">All Stages</option>'+stages.map(s=>'<option value="'+s+'">'+(STAGE_LABEL[s]||s)+'</option>').join('');
+  $('f-district-filter').innerHTML='<option value="">All Districts</option>'+dists.map(s=>'<option>'+s+'</option>').join('');
+  $('rpt-stage').innerHTML='<option value="">All</option>'+stages.map(s=>'<option value="'+s+'">'+(STAGE_LABEL[s]||s)+'</option>').join('');
+  $('rpt-district').innerHTML='<option value="">All</option>'+dists.map(s=>'<option>'+s+'</option>').join('');
+  $('rpt-zone').innerHTML='<option value="">All</option>'+zones.map(s=>'<option>'+s+'</option>').join('');
+}
+
+// ════════════════════════════════
+// MY ACTIONS — generic stage-driven approvals
+// ════════════════════════════════
+function myStage(){
+  if(user.role==='ADM')return 'ADM';
+  if(user.role==='DM')return 'DM';
+  if(user.role==='FleetManager')return 'FleetManager';
+  if(user.role==='FleetHOD')return 'FleetHOD';
+  if(user.role==='Purchase')return 'Purchase';
+  if(user.role==='Account')return 'Account';
+  return null;
+}
+function renderActions(d){
+  const stage=myStage();
+  let pen;
+  if(user.role==='ADM'||user.role==='DM'){
+    // ADM & DM also perform Closure once request reaches that stage
+    pen=d.filter(x=>x.stage===stage || x.stage==='Closure');
+  }else{
+    pen=d.filter(x=>x.stage===stage);
+  }
+  const list=$('actions-list'),em=$('actions-empty');
+  if(!pen.length){list.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  list.innerHTML=pen.map(r=>{
+    const isClosure=r.stage==='Closure';
+    return '<div class="approval-card">'
+      +'<div class="approval-hdr">'
+      +'<div><div class="approval-id">'+r.vehicleNo+'</div>'
+      +'<div class="approval-meta">'+fd(r.reqDate)+' | '+(r.district||'—')+' / '+(r.cluster||'—')+' | Raised by '+(r.raisedBy||'—')+'</div></div>'
+      +stageBadge(r)+'</div>'
+      +stageTrack(r)
+      +(r.rejectedReason?'<div class="reject-banner">Returned reason: '+r.rejectedReason+'</div>':'')
+      +'<div class="approval-body">'
+      +'<div><div class="ab-lbl">Complaint</div><div class="ab-val" style="font-size:12px;font-weight:400">'+((r.complaint||'').substring(0,55))+'</div></div>'
+      +'<div><div class="ab-lbl">Vendor</div><div class="ab-val" style="font-size:13px">'+(r.vendorName||'—')+'</div></div>'
+      +'<div><div class="ab-lbl">Estimate</div><div class="ab-val sv-gold">'+inr(r.estimateAmount)+'</div></div>'
+      +'<div><div class="ab-lbl">Running Amount</div><div class="ab-val sv-red">'+inr(amountForRow(r))+'</div></div>'
+      +'</div>'
+      +'<div class="approval-actions">'
+      +(isClosure
+        ?'<button class="btn btn-success btn-sm" onclick="openStageModal(\''+r.id+'\',\'Closure\')">✓ CLOSE REQUEST</button>'
+        :'<button class="btn btn-success btn-sm" onclick="openStageModal(\''+r.id+'\',\''+stage+'\')">✓ APPROVE & FORWARD</button>'
+         +'<button class="btn btn-danger btn-sm" onclick="openReject(\''+r.id+'\',\''+stage+'\')">✕ REJECT / SEND BACK</button>')
+      +'<button class="btn btn-outline btn-sm" onclick="openDetail(\''+r.id+'\')">Full Detail</button>'
+      +'</div></div>';
+  }).join('');
+}
+function stageTrack(r){
+  const done=(r.overallStatus||'').indexOf('Rejected')===0;
+  const idx=STAGE_ORDER.indexOf(r.stage);
+  return '<div class="stage-track">'+STAGE_ORDER.map((s,i)=>{
+    let cls='stage-chip';
+    if(done && i===idx) cls+=' rejected';
+    else if(i<idx || (i===idx && s==='Done')) cls+=' done';
+    else if(i===idx) cls+=' current';
+    return '<div class="'+cls+'">'+(STAGE_LABEL[s]||s)+'</div>';
+  }).join('')+'</div>';
+}
+
+function fieldHtml(f,row){
+  const val=row[f.id]||'';
+  if(f.type==='textarea')return '<div class="form-group span2"><label class="form-label'+(f.req?' req':'')+'">'+f.label+'</label><textarea id="sf-'+f.id+'" placeholder="'+(f.ph||'')+'">'+val+'</textarea></div>';
+  if(f.type==='select')return '<div class="form-group"><label class="form-label">'+f.label+'</label><select id="sf-'+f.id+'">'+f.options.map(o=>'<option '+(val===o?'selected':'')+'>'+o+'</option>').join('')+'</select></div>';
+  if(f.type==='vendor')return '<div class="form-group"><label class="form-label'+(f.req?' req':'')+'">'+f.label+'</label><input list="vendor-list" id="sf-'+f.id+'" value="'+val+'" onchange="autofillVendorField(\'sf-\')"><datalist id="vendor-list">'+masters.vendors.map(v=>'<option value="'+v.vendorName+'">').join('')+'</datalist></div>';
+  return '<div class="form-group"><label class="form-label'+(f.req?' req':'')+'">'+f.label+'</label><input type="'+f.type+'" id="sf-'+f.id+'" value="'+val+'"></div>';
+}
+function autofillVendorField(prefix){
+  const nameEl=$(prefix+'vendorname')||$(prefix+'vendorName');
+  const v=vendorLookup(nameEl?nameEl.value:'');
+  if(!v)return;
+  const set=(idA,idB,val)=>{const el=$(prefix+idA)||$(prefix+idB);if(el)el.value=val;};
+  set('vendorbankname','vendorBankName',v.bankName);
+  set('vendorbankaccno','vendorBankAccNo',v.accNo);
+  set('vendorbankifsc','vendorBankIFSC',v.ifsc);
+  set('bankaccholder','bankAccHolderName',v.accHolderName);
+  set('bankkyc','bankKYC',v.kyc);
+}
+
+function openStageModal(id,stageKey){
+  const row=allData.find(d=>d.id===id);if(!row)return;
+  editId=id;
+  const cfg=STAGES[stageKey];
+  $('edit-modal-title').textContent=(STAGE_LABEL[stageKey]||stageKey)+' — '+row.vehicleNo;
+  $('edit-modal-body').innerHTML=
+    '<div style="background:var(--surface2);border:1px solid var(--border);padding:12px;margin-bottom:16px;font-size:13px;color:var(--muted2)"><strong style="color:var(--text)">COMPLAINT:</strong> '+row.complaint+'</div>'
+    +'<div class="form-grid">'+cfg.fields.map(f=>fieldHtml(f,row)).join('')+'</div>'
+    +'<div style="display:flex;gap:10px;margin-top:16px">'
+    +'<button class="btn btn-success" onclick="submitStage(\''+stageKey+'\')">✓ '+(stageKey==='Closure'?'CLOSE REQUEST':'APPROVE & FORWARD TO '+(STAGE_LABEL[cfg.next]||cfg.next).toUpperCase())+'</button>'
+    +'<button class="btn btn-outline" onclick="closeModal(\'edit-modal\')">CANCEL</button>'
+    +'</div>';
+  $('edit-modal').classList.add('open');
+}
+async function submitStage(stageKey){
+  const cfg=STAGES[stageKey];
+  const row=allData.find(d=>d.id===editId);
+  const upd={...row};
+  for(const f of cfg.fields){
+    const el=$('sf-'+f.id);
+    if(f.req && el && !el.value.trim()){toast(f.label+' required','error');return;}
+    if(el) upd[f.id]=el.value;
+  }
+  const logs=sl(row.logs);
+  if(stageKey==='Closure'){
+    upd.closureAdmId=user.userId;upd.closureAdmName=user.name;upd.closureDate=new Date().toISOString().split('T')[0];
+    upd.closureStatus='Closed';upd.stage='Done';upd.overallStatus='Closed — Awaiting Invoice Hardcopy';
+    upd.hardcopyStatus=upd.hardcopyStatus||'Pending';
+    logs.push({ts:new Date().toISOString(),by:user.name+' ('+user.role+')',note:'Work closed. Invoice: '+(upd.closureInvoiceNo||'—')});
+  }else{
+    upd[cfg.selfRole==='ADM'?'admId':cfg.selfRole==='DM'?'dmId':cfg.selfRole==='FleetManager'?'fleetManagerId':cfg.selfRole==='FleetHOD'?'fleetHodId':cfg.selfRole==='Purchase'?'purchaseId':'accountId']=user.userId;
+    upd[cfg.selfRole==='ADM'?'admName':cfg.selfRole==='DM'?'dmName':cfg.selfRole==='FleetManager'?'fleetManagerName':cfg.selfRole==='FleetHOD'?'fleetHodName':cfg.selfRole==='Purchase'?'purchaseName':'accountName']=user.name;
+    upd[cfg.selfRole==='ADM'?'admDate':cfg.selfRole==='DM'?'dmDate':cfg.selfRole==='FleetManager'?'fleetManagerDate':cfg.selfRole==='FleetHOD'?'fleetHodDate':cfg.selfRole==='Purchase'?'purchaseDate':'accountDate']=new Date().toISOString().split('T')[0];
+    const statusField=cfg.selfRole==='DM'?'dmApproval':cfg.selfRole==='FleetManager'?'fleetManagerStatus':cfg.selfRole==='FleetHOD'?'fleetHodStatus':cfg.selfRole==='Purchase'?'purchaseStatus':cfg.selfRole==='Account'?'accountStatus':null;
+    if(statusField)upd[statusField]='Approved';
+    upd.stage=cfg.next;
+    upd.overallStatus='Pending '+(STAGE_LABEL[cfg.next]||cfg.next)+' Review';
+    upd.rejectedReason='';
+    logs.push({ts:new Date().toISOString(),by:user.name+' ('+user.role+')',note:'Approved & forwarded to '+(STAGE_LABEL[cfg.next]||cfg.next)});
+  }
+  upd.logs=JSON.stringify(logs);
+  const r=await updateData(upd);
+  if(r&&r.success){toast('Submitted ✓');closeModal('edit-modal');await loadData();}
+  else toast('Failed: '+(r&&r.error||''),'error');
+}
+
+function openReject(id,stageKey){
+  editId=id;
+  $('edit-modal-title').textContent='REJECT / SEND BACK';
+  $('edit-modal-body').innerHTML=
+    '<div class="form-group"><label class="form-label req">Reason for rejection / what needs correction</label><textarea id="rj-reason" style="min-height:100px"></textarea></div>'
+    +'<div style="display:flex;gap:10px"><button class="btn btn-danger" onclick="submitReject(\''+stageKey+'\')">✕ SEND BACK TO ADM</button><button class="btn btn-outline" onclick="closeModal(\'edit-modal\')">CANCEL</button></div>';
+  $('edit-modal').classList.add('open');
+}
+async function submitReject(stageKey){
+  const reason=$('rj-reason').value.trim();
+  if(!reason){toast('Reason required','error');return;}
+  const row=allData.find(d=>d.id===editId);
+  const cfg=STAGES[stageKey];
+  const logs=sl(row.logs);
+  logs.push({ts:new Date().toISOString(),by:user.name+' ('+user.role+')',note:'Rejected / sent back: '+reason});
+  const statusField=stageKey==='DM'?'dmApproval':stageKey==='FleetManager'?'fleetManagerStatus':stageKey==='FleetHOD'?'fleetHodStatus':stageKey==='Purchase'?'purchaseStatus':stageKey==='Account'?'accountStatus':null;
+  const upd={...row,stage:'ADM',overallStatus:'Rejected — Returned for Correction',rejectedReason:reason,logs:JSON.stringify(logs)};
+  if(statusField)upd[statusField]='Rejected';
+  const r=await updateData(upd);
+  if(r&&r.success){toast('Sent back to ADM');closeModal('edit-modal');await loadData();}
+  else toast('Failed','error');
+}
+
+// ════════════════════════════════
+// DETAIL VIEW
+// ════════════════════════════════
+function openDetail(id){
+  const row=allData.find(d=>d.id===id);if(!row)return;
+  const logs=sl(row.logs);
+  $('log-modal-title').textContent=row.vehicleNo+' — Full Detail';
+  $('log-modal-body').innerHTML=
+    stageTrack(row)
+    +(row.rejectedReason?'<div class="reject-banner">Returned reason: '+row.rejectedReason+'</div>':'')
+    +'<div style="font-size:12px;color:var(--muted2);line-height:1.9;margin-bottom:14px">'
+    +'<strong style="color:var(--text)">Complaint:</strong> '+(row.complaint||'—')+'<br>'
+    +'<strong style="color:var(--text)">Work Details:</strong> '+(row.workDetails||'—')+'<br>'
+    +'<strong style="color:var(--text)">Vendor:</strong> '+(row.vendorName||'—')+' | <strong style="color:var(--text)">Estimate:</strong> '+inr(row.estimateAmount)+'<br>'
+    +'<strong style="color:var(--text)">Negotiated (Purchase):</strong> '+inr(row.purchaseNegotiatedAmount)+' | <strong style="color:var(--text)">Fleet Final:</strong> '+inr(row.fleetFinalAmount)+' | <strong style="color:var(--text)">Account Final:</strong> '+inr(row.accountFinalAmount)+'<br>'
+    +'<strong style="color:var(--text)">Closure Invoice No:</strong> '+(row.closureInvoiceNo||'—')+' | <strong style="color:var(--text)">Hardcopy:</strong> '+(row.hardcopyStatus||'Pending')
+    +'</div>'
+    +'<div style="max-height:220px;overflow-y:auto">'
+    +(logs.length?logs.map(l=>'<div class="log-entry"><div class="log-meta">'+l.by+' — '+new Date(l.ts).toLocaleString('en-IN')+'</div><div class="log-text">'+l.note+'</div></div>').join(''):'<p style="color:var(--muted);font-size:13px">No log entries yet.</p>')
+    +'</div>';
+  $('log-modal').classList.add('open');
+}
+
+// ════════════════════════════════
+// FIELD: RAISE + MY REQUESTS
+// ════════════════════════════════
+async function saveEntry(){
+  const req=[['f-date','Requirement Date'],['f-regno','Vehicle No'],['f-complaint','Complaint / Requirement'],['f-workdetails','Work Details'],['f-vendorname','Vendor Name'],['f-estimate','Estimate Amount']];
+  for(const [id,lbl] of req){if(!$(id).value.trim()){toast(lbl+' required','error');$(id).focus();return;}}
+  const veh=vehicleLookup($('f-regno').value.trim());
+  const g=id=>$(id)?$(id).value:'';
+  const entry={
+    reqDate:g('f-date'),vehicleNo:g('f-regno'),
+    zone:veh?veh.zone:g('f-zone'),district:veh?veh.district:g('f-district'),
+    cluster:veh?veh.cluster:g('f-cluster'),baseLocation:veh?veh.baseLocation:g('f-baselocation'),
+    vehicleMake:veh?veh.make:g('f-make'),
+    complaint:g('f-complaint'),
+    workDetails:g('f-workdetails'),typeOfWork:g('f-typeofwork'),
+    vendorName:g('f-vendorname'),estimateAmount:g('f-estimate'),
+    paymentRecipient:g('f-paymentrecipient'),recipientName:g('f-recipientname'),
+    bankKYC:g('f-bankkyc'),vendorBankName:g('f-vendorbankname'),vendorBankAccNo:g('f-vendorbankaccno'),
+    vendorBankIFSC:g('f-vendorbankifsc'),bankAccHolderName:g('f-bankaccholder'),
+    admMedia:g('f-admmedia'),admRemarks:g('f-admremarks'),
+    admId:user.userId,admName:user.name,admDate:new Date().toISOString().split('T')[0],
+    stage:'DM',overallStatus:'Pending DM Review',
+    logs:JSON.stringify([{ts:new Date().toISOString(),by:user.name+' (ADM)',note:'Request raised & forwarded to DM: '+g('f-complaint').substring(0,80)}])
+  };
+  const r=await addData(entry);
+  if(r&&r.success){
+    toast('Request submitted to DM ✓');
+    clearForm();
+    await loadData();
+    tab('myrequests');
+  }else{
+    toast('Failed: '+(r&&r.error?r.error:'unknown'),'error');
+  }
+}
+function clearForm(){
+  ['f-regno','f-zone','f-district','f-cluster','f-baselocation','f-make','f-complaint','f-workdetails','f-typeofwork','f-vendorname','f-estimate','f-recipientname','f-bankkyc','f-vendorbankname','f-vendorbankaccno','f-vendorbankifsc','f-bankaccholder','f-admmedia','f-admremarks'].forEach(id=>{const el=$(id);if(el)el.value='';});
+  $('f-date').value=new Date().toISOString().split('T')[0];
+  $('f-paymentrecipient').value='Vendor (Direct Repairer/Supplier)';
+}
+function renderMyRequests(d){
+  const list=$('field-requests-list'),em=$('field-requests-empty');
+  if(!list)return;
+  if(!d.length){list.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  list.innerHTML=d.map(r=>{
+    const logs=sl(r.logs);
+    const last=logs.length?logs[logs.length-1]:null;
+    return '<div class="approval-card" style="border-left-color:'+(r.stage==='Done'?'var(--green)':(r.overallStatus||'').indexOf('Rejected')===0?'var(--danger)':'var(--gold)')+'">'
+      +'<div class="approval-hdr"><div><div class="approval-id">'+r.vehicleNo+' — '+fd(r.reqDate)+'</div><div class="approval-meta">'+(r.district||'—')+' / '+(r.cluster||'—')+'</div></div>'+stageBadge(r)+'</div>'
+      +stageTrack(r)
+      +(r.rejectedReason?'<div class="reject-banner">Returned reason: '+r.rejectedReason+'</div>':'')
+      +(last?'<div style="font-size:11px;color:var(--muted);margin-bottom:10px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border)"><strong style="color:var(--muted2)">'+last.by+':</strong> '+last.note+'</div>':'')
+      +'<button class="btn btn-outline btn-sm" onclick="openDetail(\''+r.id+'\')">📋 Full Detail</button></div>';
+  }).join('');
+}
+
+// ════════════════════════════════
+// USER MANAGEMENT (Admin)
+// ════════════════════════════════
+function renderUsersTable(){
+  const tb=$('users-tbody'),em=$('users-empty');
+  if(!tb)return;
+  if(!masters.users.length){tb.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  tb.innerHTML=masters.users.map(u=>'<tr><td><strong style="font-family:Rajdhani">'+u.userId+'</strong></td><td>'+u.name+'</td><td>'+u.role+'</td><td>'+(u.zone||'—')+'</td><td>'+(u.district||'—')+'</td></tr>').join('');
+}
+async function createUser(){
+  const req=[['u-id','User ID'],['u-name','Name'],['u-pin','PIN']];
+  for(const [id,lbl] of req){if(!$(id).value.trim()){toast(lbl+' required','error');$(id).focus();return;}}
+  if(masters.users.some(u=>u.userId===$('u-id').value.trim())){toast('That User ID already exists','error');return;}
+  const data={userId:$('u-id').value.trim(),name:$('u-name').value.trim(),role:$('u-role').value,pin:$('u-pin').value.trim(),zone:$('u-zone').value.trim(),district:$('u-district').value.trim()};
+  loading(true);
+  const r=await call({action:'addUser',data:data});
+  loading(false);
+  if(r&&r.success){
+    toast('ID created ✓');
+    ['u-id','u-name','u-pin','u-zone','u-district'].forEach(id=>$(id).value='');
+    await loadData();
+  }else toast('Failed: '+(r&&r.error||''),'error');
+}
+
+// ════════════════════════════════
+// INVOICE HARDCOPY FOLLOW-UP
+// ════════════════════════════════
+function renderHardcopy(d){
+  const closed=d.filter(x=>x.stage==='Done');
+  const tb=$('hardcopy-tbody'),em=$('hardcopy-empty');
+  if(!closed.length){tb.innerHTML='';em.style.display='block';return;}
+  em.style.display='none';
+  tb.innerHTML=closed.map((r,i)=>{
+    const status=r.hardcopyStatus||'Pending';
+    return '<tr><td>'+(i+1)+'</td><td>'+fd(r.closureDate)+'</td><td><strong style="font-family:Rajdhani">'+r.vehicleNo+'</strong></td><td>'+(r.vendorName||'—')+'</td>'
+      +'<td>'+(r.closureInvoiceNo||'—')+'</td><td>'+inr(amountForRow(r))+'</td>'
+      +'<td>'+(r.hardcopyBatch||'—')+'</td>'
+      +'<td>'+(status==='Received'?'<span class="badge badge-approved">Received</span>':'<span class="badge badge-pending">Pending</span>')+'</td>'
+      +'<td>'+(r.hardcopyFollowupDate?fd(r.hardcopyFollowupDate):'—')+'</td>'
+      +'<td><button class="btn btn-outline btn-sm" onclick="openHardcopy(\''+r.id+'\')">Update</button></td></tr>';
+  }).join('');
+}
+function openHardcopy(id){
+  const row=allData.find(d=>d.id===id);if(!row)return;
+  editId=id;
+  $('edit-modal-title').textContent='INVOICE HARDCOPY — '+row.vehicleNo;
+  $('edit-modal-body').innerHTML=
+    '<div class="form-grid-2">'
+    +'<div class="form-group"><label class="form-label">Status</label><select id="hc-status"><option '+((row.hardcopyStatus||'Pending')==='Pending'?'selected':'')+'>Pending</option><option '+(row.hardcopyStatus==='Received'?'selected':'')+'>Received</option></select></div>'
+    +'<div class="form-group"><label class="form-label">Reconciliation Batch</label><input type="text" id="hc-batch" value="'+(row.hardcopyBatch||'')+'" placeholder="e.g. Jul 1-15"></div>'
+    +'<div class="form-group"><label class="form-label">Follow-up Date</label><input type="date" id="hc-date" value="'+(row.hardcopyFollowupDate||'')+'"></div>'
+    +'<div class="form-group"><label class="form-label">Remarks</label><input type="text" id="hc-rem" value="'+(row.hardcopyRemarks||'')+'"></div>'
+    +'</div>'
+    +'<div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-success" onclick="submitHardcopy()">SAVE</button><button class="btn btn-outline" onclick="closeModal(\'edit-modal\')">CANCEL</button></div>';
+  $('edit-modal').classList.add('open');
+}
+async function submitHardcopy(){
+  const row=allData.find(d=>d.id===editId);
+  const upd={...row,hardcopyStatus:$('hc-status').value,hardcopyBatch:$('hc-batch').value,hardcopyFollowupDate:$('hc-date').value,hardcopyRemarks:$('hc-rem').value};
+  const r=await updateData(upd);
+  if(r&&r.success){toast('Updated ✓');closeModal('edit-modal');await loadData();}
+  else toast('Failed','error');
+}
+
+// ════════════════════════════════
+// CHARTS
+// ════════════════════════════════
+function renderCharts(d){
+  destroyCharts();
+  const m={};d.forEach(x=>{if(!x.reqDate)return;const k=x.reqDate.substring(0,7);if(!m[k])m[k]={e:0,i:0};m[k].e+=parseFloat(x.estimateAmount)||0;m[k].i+=parseFloat(amountForRow(x))||0;});
+  const mk=Object.keys(m).sort().slice(-8);
+  const ml=mk.map(x=>{const[y,mo]=x.split('-');return['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(mo)]+' '+y.slice(2);});
+  bChart('chart-monthly','bar',ml,[{label:'Estimate',data:mk.map(k=>m[k].e),backgroundColor:'rgba(245,166,35,0.7)',borderColor:'#f5a623',borderWidth:1.5,borderRadius:3},{label:'Final Amount',data:mk.map(k=>m[k].i),backgroundColor:'rgba(59,130,246,0.7)',borderColor:'#3b82f6',borderWidth:1.5,borderRadius:3}],'Rs',true);
+  const stageCounts=STAGE_ORDER.map(s=>d.filter(x=>x.stage===s).length);
+  bChart('chart-status','doughnut',STAGE_ORDER.map(s=>STAGE_LABEL[s]),[{data:stageCounts,backgroundColor:['#e63946','#f5a623','#3b82f6','#8b5cf6','#06b6d4','#00c67a','#f97316','#5a7296'],borderWidth:0}],null,true);
+  const co={};d.forEach(x=>{let k=(x.complaint||'').split('—')[0].trim().substring(0,22)||'Other';co[k]=(co[k]||0)+1;});
+  const tc=Object.entries(co).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  bChart('chart-complaint','bar',tc.map(x=>x[0]),[{data:tc.map(x=>x[1]),backgroundColor:['#e63946','#f5a623','#3b82f6','#00c67a','#8b5cf6','#06b6d4','#f97316'],borderRadius:3}],null,false);
+  const cv={};d.forEach(x=>{if(x.vehicleNo)cv[x.vehicleNo]=(cv[x.vehicleNo]||0)+(parseFloat(amountForRow(x))||0);});
+  const tv=Object.entries(cv).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  bChart('chart-cost','bar',tv.map(x=>x[0]),[{data:tv.map(x=>x[1]),backgroundColor:'rgba(59,130,246,0.75)',borderRadius:3}],'Rs',false);
+  const dc={};d.forEach(x=>{const k=x.district||'Unknown';dc[k]=(dc[k]||0)+1;});
+  const td=Object.entries(dc).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  bChart('chart-district','doughnut',td.map(x=>x[0]),[{data:td.map(x=>x[1]),backgroundColor:['#e63946','#f5a623','#3b82f6','#00c67a','#8b5cf6','#06b6d4','#f97316','#5a7296','#c1121f','#22c55e'],borderWidth:0}],null,true);
+}
+function destroyCharts(){Object.values(charts).forEach(c=>c&&c.destroy&&c.destroy());charts={};}
+function bChart(id,type,labels,datasets,prefix,legend){
+  const ctx=$(id);if(!ctx)return;
+  charts[id]=new Chart(ctx,{type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:legend,position:'bottom',labels:{color:'#5a7296',font:{family:'DM Sans',size:11},boxWidth:10,padding:12}},tooltip:{backgroundColor:'rgba(14,21,32,.95)',borderColor:'#1f2e42',borderWidth:1,titleColor:'#e2eaf6',bodyColor:'#8ba0bb',callbacks:{label:c=>prefix?prefix+c.raw.toLocaleString('en-IN'):c.raw}}},scales:type!=='doughnut'?{x:{ticks:{color:'#5a7296',font:{size:10}},grid:{color:'rgba(31,46,66,.5)'},maxRotation:35},y:{ticks:{color:'#5a7296',callback:v=>prefix?prefix+v.toLocaleString('en-IN'):v},grid:{color:'rgba(31,46,66,.5)'}}}:{}}});
+}
+
+// ════════════════════════════════
+// REPORTS
+// ════════════════════════════════
+function genReport(){
+  const from=$('rpt-from').value,to=$('rpt-to').value;
+  const stg=$('rpt-stage').value,dist=$('rpt-district').value,zone=$('rpt-zone').value;
+  let d=[...allData];
+  if(from)d=d.filter(r=>r.reqDate>=from);if(to)d=d.filter(r=>r.reqDate<=to);
+  if(stg)d=d.filter(r=>r.stage===stg);if(dist)d=d.filter(r=>r.district===dist);if(zone)d=d.filter(r=>r.zone===zone);
+  const tE=d.reduce((s,r)=>s+(parseFloat(r.estimateAmount)||0),0);
+  const tI=d.reduce((s,r)=>s+(parseFloat(amountForRow(r))||0),0);
+  const closed=d.filter(r=>r.stage==='Done').length;
+  $('report-output').innerHTML=
+    '<div class="report-summary">'
+    +'<div class="rs-card"><div class="rs-lbl">Records</div><div class="rs-val">'+d.length+'</div></div>'
+    +'<div class="rs-card"><div class="rs-lbl">Total Est.</div><div class="rs-val sv-gold">'+inr(tE)+'</div></div>'
+    +'<div class="rs-card"><div class="rs-lbl">Total Final Amount</div><div class="rs-val sv-blue">'+inr(tI)+'</div></div>'
+    +'<div class="rs-card"><div class="rs-lbl">Saved</div><div class="rs-val sv-green">'+inr(Math.max(0,tE-tI))+'</div></div>'
+    +'<div class="rs-card"><div class="rs-lbl">Closed</div><div class="rs-val sv-red">'+closed+'</div></div>'
+    +'</div>'
+    +'<div style="display:flex;gap:10px;margin-bottom:14px">'
+    +'<button class="btn btn-outline btn-sm" onclick="expRpt()">⬇ CSV</button>'
+    +'<button class="btn btn-outline btn-sm" onclick="window.print()">🖨 Print</button>'
+    +'</div>'
+    +'<div class="table-wrap"><table><thead><tr><th>#</th><th>Date</th><th>Vehicle</th><th>District</th><th>Complaint</th><th>Stage</th><th>Estimate</th><th>Final Amt</th></tr></thead><tbody>'
+    +d.map((r,i)=>'<tr><td>'+(i+1)+'</td><td>'+fd(r.reqDate)+'</td><td><strong style="font-family:Rajdhani">'+(r.vehicleNo||'—')+'</strong></td><td>'+(r.district||'—')+'</td><td style="max-width:150px;white-space:normal;font-size:11px">'+((r.complaint||'').substring(0,55))+'</td><td>'+stageBadge(r)+'</td><td>'+(r.estimateAmount?'Rs'+parseFloat(r.estimateAmount).toLocaleString('en-IN'):'—')+'</td><td>'+inr(amountForRow(r))+'</td></tr>').join('')
+    +'</tbody></table></div>';
+  window._rd=d;
+}
+function expRpt(){expCSV(window._rd||[],'fleet_report');}
+function exportCSV(){expCSV(filteredData,'fleet_data');}
+function expCSV(data,fn){
+  const h=['Requirement Date','Vehicle No','Zone','District','Cluster','Base Location','Vehicle Make','Raised By','Complaint','Work Details','Type of Work','Vendor Name','Estimate Amount','Payment Recipient','Recipient Name','Bank KYC','Vendor Bank Name','Vendor Bank Acc No','Vendor Bank IFSC','Account Holder Name','Fleet Final Amount','Purchase Negotiated Amount','Account Final Amount','Closure Invoice No','Stage','Overall Status','Hardcopy Status'];
+  const k=['reqDate','vehicleNo','zone','district','cluster','baseLocation','vehicleMake','raisedBy','complaint','workDetails','typeOfWork','vendorName','estimateAmount','paymentRecipient','recipientName','bankKYC','vendorBankName','vendorBankAccNo','vendorBankIFSC','bankAccHolderName','fleetFinalAmount','purchaseNegotiatedAmount','accountFinalAmount','closureInvoiceNo','stage','overallStatus','hardcopyStatus'];
+  const csv=[h.join(','),...data.map(r=>k.map(x=>'"'+((r[x]||'').toString().replace(/"/g,'""'))+'"').join(','))].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=fn+'_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
+}
+
+['edit-modal','log-modal'].forEach(id=>{
+  $(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});
+});
+</script>
+</body>
+</html>
