@@ -366,7 +366,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(255,255,255,.02
 // ════════════════════════════════
 // CONFIG
 // ════════════════════════════════
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwZQ4ceDQLk5ZFXP9CBXQb0RZXiIN4vuO3VC2P5GQ70LEcxJJzwPNm1ozI-Dukr4tkm/exec'; // <-- redeploy with the new Code.gs and paste the fresh URL here
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxe-bPWDjq78mJZBzk8ICPxIeahL7SCe6DwNkz3fKWP_mU1W4hZJrWwcmnLYD__Y2F3/exec'; // <-- redeploy with the new Code.gs and paste the fresh URL here
 
 const STAGE_ORDER = ['ADM','DM','FleetManager','FleetHOD','Purchase','Account','Closure','Done'];
 const STAGE_LABEL = {ADM:'ADM Review',DM:'DM Approval',FleetManager:'Fleet Manager',FleetHOD:'Fleet HOD',Purchase:'Purchase',Account:'Account',Closure:'Closure',Done:'Closed'};
@@ -722,6 +722,7 @@ function renderAccountActions(pen){
       +'<div class="approval-meta">'+(r.zone||'—')+' / '+(r.district||'—')+' | '+(r.baseLocation||'—')+'</div></div>'
       +stageBadge(r)+'</div>'
       +'<div class="approval-body" style="grid-template-columns:repeat(3,1fr)">'
+      +'<div><div class="ab-lbl">Vendor Name</div><div class="ab-val" style="font-size:13px">'+(r.vendorName||'—')+'</div></div>'
       +'<div><div class="ab-lbl">Pay To</div><div class="ab-val" style="font-size:13px">'+(recipient||'—')+'</div></div>'
       +'<div><div class="ab-lbl">Bank Name</div><div class="ab-val" style="font-size:13px">'+(r.vendorBankName||'—')+'</div></div>'
       +'<div><div class="ab-lbl">Account No</div><div class="ab-val" style="font-size:13px">'+(r.vendorBankAccNo||'—')+'</div></div>'
@@ -751,10 +752,10 @@ async function markPaid(id){
 function exportAccountCSV(){
   const pen=allData.filter(x=>x.stage==='Account');
   if(!pen.length){toast('Nothing pending','warn');return;}
-  const h=['Vehicle No','Zone','District','Base Location','Beneficiary Name','Bank Name','Account No','IFSC','Amount','Remarks'];
+  const h=['Vehicle No','Zone','District','Base Location','Vendor Name','Beneficiary Name','Bank Name','Account No','IFSC','Amount','Remarks'];
   const rows=pen.map(r=>{
     const recipient=(r.paymentRecipient||'').indexOf('ADM')===0?(r.recipientName||r.admName):(r.bankAccHolderName||r.vendorName);
-    return [r.vehicleNo,r.zone,r.district,r.baseLocation,recipient,r.vendorBankName,r.vendorBankAccNo,r.vendorBankIFSC,amountForRow(r),r.complaint];
+    return [r.vehicleNo,r.zone,r.district,r.baseLocation,r.vendorName,recipient,r.vendorBankName,r.vendorBankAccNo,r.vendorBankIFSC,amountForRow(r),r.complaint];
   });
   const csv=[h.join(','),...rows.map(row=>row.map(x=>'"'+((x||'').toString().replace(/"/g,'""'))+'"').join(','))].join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='bank_payment_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
