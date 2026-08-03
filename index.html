@@ -366,7 +366,7 @@ tr:last-child td{border-bottom:none;}tr:hover td{background:rgba(255,255,255,.02
 // ════════════════════════════════
 // CONFIG
 // ════════════════════════════════
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwZQ4ceDQLk5ZFXP9CBXQb0RZXiIN4vuO3VC2P5GQ70LEcxJJzwPNm1ozI-Dukr4tkm/exec'; // <-- redeploy with the new Code.gs and paste the fresh URL here
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxe-bPWDjq78mJZBzk8ICPxIeahL7SCe6DwNkz3fKWP_mU1W4hZJrWwcmnLYD__Y2F3/exec'; // <-- redeploy with the new Code.gs and paste the fresh URL here
 
 const STAGE_ORDER = ['ADM','DM','FleetManager','FleetHOD','Purchase','Account','Closure','Done'];
 const STAGE_LABEL = {ADM:'ADM Review',DM:'DM Approval',FleetManager:'Fleet Manager',FleetHOD:'Fleet HOD',Purchase:'Purchase',Account:'Account',Closure:'Closure',Done:'Closed'};
@@ -398,6 +398,9 @@ const STAGES = {
       {id:'fleetManagerRemarks',label:'Fleet Manager Remarks',type:'textarea'}
   ]},
   FleetHOD: { next:'Purchase', selfRole:'FleetHOD', fields:[
+      {id:'fleetHodNegotiatedDate',label:'HOD Negotiated Date',type:'date'},
+      {id:'fleetHodNegotiatedAmount',label:'HOD Negotiated Amount (Rs)',type:'number'},
+      {id:'fleetHodFinalAmount',label:'HOD Final Amount (Rs)',type:'number'},
       {id:'fleetHodRemarks',label:'HOD Remarks',type:'textarea'}
   ]},
   Purchase: { next:'Account', selfRole:'Purchase', fields:[
@@ -433,7 +436,7 @@ function stageBadge(r){
   return '<span class="badge badge-pending">'+(STAGE_LABEL[r.stage]||r.stage)+'</span>';
 }
 function amountForRow(r){
-  return r.accountFinalAmount || r.fleetFinalAmount || r.purchaseNegotiatedAmount || r.estimateAmount || '';
+  return r.accountFinalAmount || r.fleetHodFinalAmount || r.fleetFinalAmount || r.purchaseNegotiatedAmount || r.estimateAmount || '';
 }
 
 // ════════════════════════════════
@@ -663,6 +666,7 @@ function myStage(){
   return null;
 }
 function renderActions(d){
+  if(user.role==='Account'){renderAccountActions(d.filter(x=>x.stage==='Account'));return;}
   const stage=myStage();
   let pen;
   if(user.role==='ADM'||user.role==='DM'){
@@ -697,6 +701,63 @@ function renderActions(d){
       +'<button class="btn btn-outline btn-sm" onclick="openDetail(\''+r.id+'\')">Full Detail</button>'
       +'</div></div>';
   }).join('');
+}
+
+// Account role: a dedicated one-by-one payment list — vehicle/location + full bank details + amount,
+// with a single "Mark Paid" action per row (no form-filling needed) and a bank-portal-ready CSV export.
+function renderAccountActions(pen){
+  const list=$('actions-list'),em=$('actions-empty');
+  if(!pen.length){
+    list.innerHTML='';
+    em.style.display='block';
+    return;
+  }
+  em.style.display='none';
+  const toolbarHtml='<div class="toolbar"><div style="font-size:12px;color:var(--muted)">'+pen.length+' payment'+(pen.length!==1?'s':'')+' pending. Mark each Paid once the transfer is done — it moves straight to Closure.</div><button class="btn btn-outline btn-sm" onclick="exportAccountCSV()">⬇ BANK PAYMENT CSV</button></div>';
+  list.innerHTML=toolbarHtml+pen.map(r=>{
+    const recipient=(r.paymentRecipient||'').indexOf('ADM')===0?(r.recipientName||r.admName):(r.bankAccHolderName||r.vendorName);
+    return '<div class="approval-card">'
+      +'<div class="approval-hdr">'
+      +'<div><div class="approval-id">'+r.vehicleNo+'</div>'
+      +'<div class="approval-meta">'+(r.zone||'—')+' / '+(r.district||'—')+' | '+(r.baseLocation||'—')+'</div></div>'
+      +stageBadge(r)+'</div>'
+      +'<div class="approval-body" style="grid-template-columns:repeat(3,1fr)">'
+      +'<div><div class="ab-lbl">Pay To</div><div class="ab-val" style="font-size:13px">'+(recipient||'—')+'</div></div>'
+      +'<div><div class="ab-lbl">Bank Name</div><div class="ab-val" style="font-size:13px">'+(r.vendorBankName||'—')+'</div></div>'
+      +'<div><div class="ab-lbl">Account No</div><div class="ab-val" style="font-size:13px">'+(r.vendorBankAccNo||'—')+'</div></div>'
+      +'<div><div class="ab-lbl">IFSC</div><div class="ab-val" style="font-size:13px">'+(r.vendorBankIFSC||'—')+'</div></div>'
+      +'<div><div class="ab-lbl">Bank KYC</div><div class="ab-val" style="font-size:13px">'+(r.bankKYC||'—')+'</div></div>'
+      +'<div><div class="ab-lbl">Amount to Pay</div><input type="number" id="acct-amt-'+r.id+'" value="'+(amountForRow(r)||'')+'" style="font-family:Rajdhani;font-weight:700;color:var(--gold)"></div>'
+      +'</div>'
+      +'<div class="approval-actions">'
+      +'<button class="btn btn-success btn-sm" onclick="markPaid(\''+r.id+'\')">✓ PAID — SEND TO CLOSURE</button>'
+      +'<button class="btn btn-danger btn-sm" onclick="openReject(\''+r.id+'\',\'Account\')">✕ REJECT / SEND BACK</button>'
+      +'<button class="btn btn-outline btn-sm" onclick="openDetail(\''+r.id+'\')">Full Detail</button>'
+      +'</div></div>';
+  }).join('');
+}
+async function markPaid(id){
+  const row=allData.find(d=>d.id===id);if(!row)return;
+  const amtEl=$('acct-amt-'+id);
+  const amt=amtEl?amtEl.value:amountForRow(row);
+  if(!amt){toast('Amount required','error');return;}
+  const logs=sl(row.logs);
+  logs.push({ts:new Date().toISOString(),by:user.name+' (Account)',note:'Paid. Amount: Rs'+parseFloat(amt).toLocaleString('en-IN')});
+  const upd={...row,accountId:user.userId,accountName:user.name,accountDate:new Date().toISOString().split('T')[0],accountFinalAmount:amt,accountStatus:'Approved',stage:'Closure',overallStatus:'Pending Closure',rejectedReason:'',logs:JSON.stringify(logs)};
+  const r=await updateData(upd);
+  if(r&&r.success){toast('Marked Paid ✓');await loadData();}
+  else toast('Failed: '+(r&&r.error||''),'error');
+}
+function exportAccountCSV(){
+  const pen=allData.filter(x=>x.stage==='Account');
+  if(!pen.length){toast('Nothing pending','warn');return;}
+  const h=['Vehicle No','Zone','District','Base Location','Beneficiary Name','Bank Name','Account No','IFSC','Amount','Remarks'];
+  const rows=pen.map(r=>{
+    const recipient=(r.paymentRecipient||'').indexOf('ADM')===0?(r.recipientName||r.admName):(r.bankAccHolderName||r.vendorName);
+    return [r.vehicleNo,r.zone,r.district,r.baseLocation,recipient,r.vendorBankName,r.vendorBankAccNo,r.vendorBankIFSC,amountForRow(r),r.complaint];
+  });
+  const csv=[h.join(','),...rows.map(row=>row.map(x=>'"'+((x||'').toString().replace(/"/g,'""'))+'"').join(','))].join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download='bank_payment_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 }
 function stageTrack(r){
   const done=(r.overallStatus||'').indexOf('Rejected')===0;
@@ -812,7 +873,7 @@ function openDetail(id){
     +'<strong style="color:var(--text)">Complaint:</strong> '+(row.complaint||'—')+'<br>'
     +'<strong style="color:var(--text)">Work Details:</strong> '+(row.workDetails||'—')+'<br>'
     +'<strong style="color:var(--text)">Vendor:</strong> '+(row.vendorName||'—')+' | <strong style="color:var(--text)">Estimate:</strong> '+inr(row.estimateAmount)+'<br>'
-    +'<strong style="color:var(--text)">Negotiated (Purchase):</strong> '+inr(row.purchaseNegotiatedAmount)+' | <strong style="color:var(--text)">Fleet Final:</strong> '+inr(row.fleetFinalAmount)+' | <strong style="color:var(--text)">Account Final:</strong> '+inr(row.accountFinalAmount)+'<br>'
+    +'<strong style="color:var(--text)">Negotiated (Purchase):</strong> '+inr(row.purchaseNegotiatedAmount)+' | <strong style="color:var(--text)">Fleet Manager Final:</strong> '+inr(row.fleetFinalAmount)+' | <strong style="color:var(--text)">Fleet HOD Final:</strong> '+inr(row.fleetHodFinalAmount)+' | <strong style="color:var(--text)">Account Final:</strong> '+inr(row.accountFinalAmount)+'<br>'
     +'<strong style="color:var(--text)">Closure Invoice No:</strong> '+(row.closureInvoiceNo||'—')+' | <strong style="color:var(--text)">Hardcopy:</strong> '+(row.hardcopyStatus||'Pending')
     +'</div>'
     +'<div style="max-height:220px;overflow-y:auto">'
@@ -1001,8 +1062,8 @@ function genReport(){
 function expRpt(){expCSV(window._rd||[],'fleet_report');}
 function exportCSV(){expCSV(filteredData,'fleet_data');}
 function expCSV(data,fn){
-  const h=['Requirement Date','Vehicle No','Zone','District','Cluster','Base Location','Vehicle Make','Raised By','Complaint','Work Details','Type of Work','Vendor Name','Estimate Amount','Payment Recipient','Recipient Name','Bank KYC','Vendor Bank Name','Vendor Bank Acc No','Vendor Bank IFSC','Account Holder Name','Fleet Final Amount','Purchase Negotiated Amount','Account Final Amount','Closure Invoice No','Stage','Overall Status','Hardcopy Status'];
-  const k=['reqDate','vehicleNo','zone','district','cluster','baseLocation','vehicleMake','raisedBy','complaint','workDetails','typeOfWork','vendorName','estimateAmount','paymentRecipient','recipientName','bankKYC','vendorBankName','vendorBankAccNo','vendorBankIFSC','bankAccHolderName','fleetFinalAmount','purchaseNegotiatedAmount','accountFinalAmount','closureInvoiceNo','stage','overallStatus','hardcopyStatus'];
+  const h=['Requirement Date','Vehicle No','Zone','District','Cluster','Base Location','Vehicle Make','Raised By','Complaint','Work Details','Type of Work','Vendor Name','Estimate Amount','Payment Recipient','Recipient Name','Bank KYC','Vendor Bank Name','Vendor Bank Acc No','Vendor Bank IFSC','Account Holder Name','Fleet Manager Final Amount','Fleet HOD Negotiated Amount','Fleet HOD Final Amount','Purchase Negotiated Amount','Account Final Amount','Closure Invoice No','Stage','Overall Status','Hardcopy Status'];
+  const k=['reqDate','vehicleNo','zone','district','cluster','baseLocation','vehicleMake','raisedBy','complaint','workDetails','typeOfWork','vendorName','estimateAmount','paymentRecipient','recipientName','bankKYC','vendorBankName','vendorBankAccNo','vendorBankIFSC','bankAccHolderName','fleetFinalAmount','fleetHodNegotiatedAmount','fleetHodFinalAmount','purchaseNegotiatedAmount','accountFinalAmount','closureInvoiceNo','stage','overallStatus','hardcopyStatus'];
   const csv=[h.join(','),...data.map(r=>k.map(x=>'"'+((r[x]||'').toString().replace(/"/g,'""'))+'"').join(','))].join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=fn+'_'+new Date().toISOString().split('T')[0]+'.csv';a.click();
 }
